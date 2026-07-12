@@ -44,16 +44,16 @@ export const metadata: Metadata = {
     "exterior cleaning",
   ],
   openGraph: {
-    title: "True Coastal Exterior",
-    description: "Exterior Cleaning in LA & Orange County",
+    title: "True Coastal Exterior Home Services",
+    description: "Exterior Home Services in LA & Orange County",
     url: `https://${BUSINESS.domain}`,
     siteName: BUSINESS.name,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "True Coastal Exterior",
-    description: "Exterior Cleaning in LA & Orange County",
+    title: "True Coastal Exterior Home Services",
+    description: "Exterior Home Services in LA & Orange County",
   },
 };
 
