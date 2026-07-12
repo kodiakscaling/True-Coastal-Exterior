@@ -44,18 +44,16 @@ export const metadata: Metadata = {
     "exterior cleaning",
   ],
   openGraph: {
-    title: `${BUSINESS.name} — Coastal-Tough Exterior Cleaning`,
-    description:
-      "Pressure washing, house washing, roof washing, and window cleaning across LA and Orange County. Free on-site quotes, usually within 48 hours.",
+    title: "True Coastal Exterior",
+    description: "Exterior Cleaning in LA & Orange County",
     url: `https://${BUSINESS.domain}`,
     siteName: BUSINESS.name,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${BUSINESS.name}`,
-    description:
-      "Pressure, house, roof & window washing — LA & OC.",
+    title: "True Coastal Exterior",
+    description: "Exterior Cleaning in LA & Orange County",
   },
 };
 
