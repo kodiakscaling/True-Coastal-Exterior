@@ -108,35 +108,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Forward every lead to the CRM (Flyra) via a configured inbound webhook.
-    // Set FLYRA_WEBHOOK_URL in the environment. Non-blocking — a CRM hiccup
-    // never breaks the form (the email + log still go through).
-    const crmWebhook = process.env.FLYRA_WEBHOOK_URL;
-    if (crmWebhook) {
+    // Forward every lead to Flyra CRM as a Job — this upserts the customer by
+    // email/phone and creates a job (the pipeline item) in one call.
+    // Non-blocking: a CRM hiccup never breaks the form (email + log still go).
+    // Set FLYRA_API_KEY (an "flr_live_..." key) in the environment.
+    const flyraKey = process.env.FLYRA_API_KEY;
+    if (flyraKey) {
       const [firstName, ...rest] = payload.name.trim().split(/\s+/);
       try {
-        const r = await fetch(crmWebhook, {
+        const r = await fetch("https://app.flyra.io/v2026-06-01/jobs", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${flyraKey}`,
+          },
           body: JSON.stringify({
-            ...payload,
-            firstName,
-            lastName: rest.join(" "),
-            fullName: payload.name,
+            customer: {
+              first_name: firstName || undefined,
+              last_name: rest.join(" ") || undefined,
+              email: payload.email,
+              mobile_phone: payload.phone,
+              address: payload.address,
+            },
+            service: payload.service,
+            notes: [
+              payload.message,
+              `Property address: ${payload.address}`,
+              `Submitted via truecoastalexterior.com — ${payload.source}`,
+            ]
+              .filter(Boolean)
+              .join("\n"),
           }),
         });
-        if (r.ok) console.log("[quote] Flyra webhook ok", r.status);
-        else
-          console.error(
-            "[quote] Flyra webhook error",
-            r.status,
-            await r.text(),
-          );
+        if (r.ok) console.log("[quote] Flyra job created", r.status);
+        else console.error("[quote] Flyra error", r.status, await r.text());
       } catch (err) {
-        console.error("[quote] Flyra webhook failed", err);
+        console.error("[quote] Flyra send failed", err);
       }
     } else {
-      console.warn("[quote] FLYRA_WEBHOOK_URL not set — lead not sent to CRM");
+      console.warn("[quote] FLYRA_API_KEY not set — lead not sent to Flyra");
     }
 
     return NextResponse.json({ ok: true });
