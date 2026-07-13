@@ -49,10 +49,16 @@ export function LeadForm({
     setError(null);
 
     const form = e.currentTarget;
-    const data = Object.fromEntries(new FormData(form).entries());
-    data.service = services
-      .map((s) => (s === "Other" ? `Other: ${otherText.trim()}` : s))
-      .join(", ");
+    const fields = Object.fromEntries(new FormData(form).entries());
+    const data = {
+      ...fields,
+      service: services
+        .map((s) => (s === "Other" ? `Other: ${otherText.trim()}` : s))
+        .join(", "),
+      // Raw selections so the server can map them to Flyra's service slugs
+      serviceList: services,
+      otherText: otherText.trim(),
+    };
 
     try {
       const res = await fetch("/api/quote", {

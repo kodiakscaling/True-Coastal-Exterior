@@ -29,6 +29,11 @@ export async function POST(req: NextRequest) {
       email: String(body.email).slice(0, 200),
       address: String(body.address).slice(0, 300),
       service: String(body.service).slice(0, 300),
+      // Raw service titles the customer selected (for slug mapping)
+      serviceTitles: Array.isArray(body.serviceList)
+        ? body.serviceList.map(String).slice(0, 12)
+        : [],
+      otherText: String(body.otherText ?? "").slice(0, 500),
       message: String(body.message ?? "").slice(0, 2000),
       source: String(body.source ?? "Website").slice(0, 80),
       submittedAt: new Date().toISOString(),
@@ -115,19 +120,48 @@ export async function POST(req: NextRequest) {
     // Forward every lead into the Flyra Leads pipeline (NEW stage) via the
     // hosted lead form's public submit endpoint. Public — no key needed.
     // Non-blocking: a CRM hiccup never breaks the form (email + log still go).
+    //
+    // This mirrors the fields/payload of the hosted Flyra form (f981awcw) exactly
+    // so the two intake paths can't drift. Field keys captured from that form:
+    //   - service_type: array of slugs
+    //   - field_7: property address (Flyra's address field id for this form)
+    //   - details: free-text notes
     const flyraFormUrl =
       process.env.FLYRA_FORM_URL ||
-      "https://app.flyra.io/api/forms/public/bf2ugqgs/submit";
+      "https://app.flyra.io/api/forms/public/f981awcw/submit";
+    // Website service titles -> Flyra service_type slugs
+    const SERVICE_SLUGS: Record<string, string> = {
+      "Pressure Washing": "pressure_washing",
+      "House Washing": "house_washing",
+      "Roof Washing": "roof_washing",
+      "Window Cleaning": "window_cleaning",
+      "Gutter Cleaning": "gutter_cleaning",
+      "Solar Panel Cleaning": "solar_panel_cleaning",
+      Other: "other",
+    };
     try {
+      // Map selected services to slugs (dedupe, drop anything unknown)
+      let serviceSlugs = payload.serviceTitles
+        .map((t: string) => SERVICE_SLUGS[t])
+        .filter((v: string, i: number, a: string[]) => v && a.indexOf(v) === i);
+      // Fallback: if the raw list didn't come through, recover slugs from the
+      // display string so we never send an empty selection.
+      if (serviceSlugs.length === 0) {
+        for (const [title, slug] of Object.entries(SERVICE_SLUGS)) {
+          if (payload.service.includes(title)) serviceSlugs.push(slug);
+        }
+      }
+      if (serviceSlugs.length === 0) serviceSlugs = ["other"];
+
       const zipMatch = payload.address.match(/\b\d{5}\b/);
-      const notes = [
-        `Service(s): ${payload.service}`,
-        `Property: ${payload.address}`,
-        payload.message ? `Notes: ${payload.message}` : null,
-        `Source: ${payload.source} (truecoastalexterior.com)`,
+      const details = [
+        payload.message || null,
+        payload.otherText ? `Other request: ${payload.otherText}` : null,
+        `Submitted via ${payload.source} — truecoastalexterior.com`,
       ]
         .filter(Boolean)
-        .join("\n");
+        .join("\n\n");
+
       const r = await fetch(flyraFormUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -137,12 +171,10 @@ export async function POST(req: NextRequest) {
             last_name: payload.lastName,
             phone: payload.phone,
             email: payload.email,
-            service_type: "other",
-            zip: zipMatch ? zipMatch[0] : "",
-            sms_consent: false,
-            notes,
-            address: payload.address,
-            message: payload.message || undefined,
+            field_7: payload.address,
+            field_7_zip: zipMatch ? zipMatch[0] : "",
+            service_type: serviceSlugs,
+            details,
             quote_total_cents: 0,
             quote_total: 0,
             quote_line_items: [],
