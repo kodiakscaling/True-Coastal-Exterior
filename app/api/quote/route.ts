@@ -108,45 +108,51 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Forward every lead to Flyra CRM as a Job — this upserts the customer by
-    // email/phone and creates a job (the pipeline item) in one call.
+    // Forward every lead into the Flyra Leads pipeline (NEW stage) via the
+    // hosted lead form's public submit endpoint. Public — no key needed.
     // Non-blocking: a CRM hiccup never breaks the form (email + log still go).
-    // Set FLYRA_API_KEY (an "flr_live_..." key) in the environment.
-    const flyraKey = process.env.FLYRA_API_KEY;
-    if (flyraKey) {
+    const flyraFormUrl =
+      process.env.FLYRA_FORM_URL ||
+      "https://app.flyra.io/api/forms/public/bf2ugqgs/submit";
+    try {
       const [firstName, ...rest] = payload.name.trim().split(/\s+/);
-      try {
-        const r = await fetch("https://app.flyra.io/v2026-06-01/jobs", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${flyraKey}`,
+      const zipMatch = payload.address.match(/\b\d{5}\b/);
+      const notes = [
+        `Service(s): ${payload.service}`,
+        `Property: ${payload.address}`,
+        payload.message ? `Notes: ${payload.message}` : null,
+        `Source: ${payload.source} (truecoastalexterior.com)`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+      const r = await fetch(flyraFormUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payload: {
+            first_name: firstName,
+            last_name: rest.join(" "),
+            phone: payload.phone,
+            email: payload.email,
+            service_type: "other",
+            zip: zipMatch ? zipMatch[0] : "",
+            sms_consent: false,
+            notes,
+            address: payload.address,
+            message: payload.message || undefined,
+            quote_total_cents: 0,
+            quote_total: 0,
+            quote_line_items: [],
           },
-          body: JSON.stringify({
-            customer: {
-              first_name: firstName || undefined,
-              last_name: rest.join(" ") || undefined,
-              email: payload.email,
-              mobile_phone: payload.phone,
-              address: payload.address,
-            },
-            service: payload.service,
-            notes: [
-              payload.message,
-              `Property address: ${payload.address}`,
-              `Submitted via truecoastalexterior.com — ${payload.source}`,
-            ]
-              .filter(Boolean)
-              .join("\n"),
-          }),
-        });
-        if (r.ok) console.log("[quote] Flyra job created", r.status);
-        else console.error("[quote] Flyra error", r.status, await r.text());
-      } catch (err) {
-        console.error("[quote] Flyra send failed", err);
-      }
-    } else {
-      console.warn("[quote] FLYRA_API_KEY not set — lead not sent to Flyra");
+          tracking: {},
+          referrer: null,
+          landing_url: "https://truecoastalexterior.com",
+        }),
+      });
+      if (r.ok) console.log("[quote] Flyra lead created", r.status);
+      else console.error("[quote] Flyra error", r.status, await r.text());
+    } catch (err) {
+      console.error("[quote] Flyra send failed", err);
     }
 
     return NextResponse.json({ ok: true });
