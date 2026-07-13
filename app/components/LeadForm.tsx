@@ -7,7 +7,6 @@ type Status = "idle" | "submitting" | "success" | "error";
 
 const SERVICE_OPTIONS = [
   ...SERVICES.map((s) => s.title),
-  "Not sure yet",
   "Other",
 ];
 
