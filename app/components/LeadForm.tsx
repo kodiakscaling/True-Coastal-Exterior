@@ -82,9 +82,10 @@ export function LeadForm({
       } ${className}`}
     >
       <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-        <Field id={id("name")} name="name" label="Your name" placeholder="Alex Rivera" required />
-        <Field id={id("phone")} name="phone" label="Phone" placeholder="(555) 555-5555" type="tel" required />
+        <Field id={id("first_name")} name="first_name" label="First name" placeholder="Alex" required />
+        <Field id={id("last_name")} name="last_name" label="Last name" placeholder="Rivera" required />
       </div>
+      <Field id={id("phone")} name="phone" label="Phone" placeholder="(555) 555-5555" type="tel" required />
       <Field id={id("email")} name="email" label="Email" placeholder="you@email.com" type="email" required />
       <Field id={id("address")} name="address" label="Property address" placeholder="123 Ocean Ave, Long Beach" required />
 

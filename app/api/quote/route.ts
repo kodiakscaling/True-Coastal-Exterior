@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    const required = ["name", "phone", "email", "address", "service"];
+    const required = ["first_name", "phone", "email", "address", "service"];
     for (const key of required) {
       if (!body[key] || typeof body[key] !== "string" || body[key].trim().length === 0) {
         return NextResponse.json(
@@ -19,8 +19,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const firstName = String(body.first_name).slice(0, 80);
+    const lastName = String(body.last_name ?? "").slice(0, 80);
     const payload = {
-      name: String(body.name).slice(0, 120),
+      firstName,
+      lastName,
+      name: [firstName, lastName].filter(Boolean).join(" "),
       phone: String(body.phone).slice(0, 40),
       email: String(body.email).slice(0, 200),
       address: String(body.address).slice(0, 300),
@@ -115,7 +119,6 @@ export async function POST(req: NextRequest) {
       process.env.FLYRA_FORM_URL ||
       "https://app.flyra.io/api/forms/public/bf2ugqgs/submit";
     try {
-      const [firstName, ...rest] = payload.name.trim().split(/\s+/);
       const zipMatch = payload.address.match(/\b\d{5}\b/);
       const notes = [
         `Service(s): ${payload.service}`,
@@ -130,8 +133,8 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           payload: {
-            first_name: firstName,
-            last_name: rest.join(" "),
+            first_name: payload.firstName,
+            last_name: payload.lastName,
             phone: payload.phone,
             email: payload.email,
             service_type: "other",
