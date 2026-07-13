@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { BUSINESS, SERVICES } from "@/lib/constants";
+import { AddressAutocomplete } from "./AddressAutocomplete";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -30,6 +31,7 @@ export function LeadForm({
   const [error, setError] = useState<string | null>(null);
   const [services, setServices] = useState<string[]>([]);
   const [otherText, setOtherText] = useState("");
+  const [resetSignal, setResetSignal] = useState(0);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,6 +73,7 @@ export function LeadForm({
       form.reset();
       setServices([]);
       setOtherText("");
+      setResetSignal((n) => n + 1);
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Please try again.");
@@ -92,7 +95,14 @@ export function LeadForm({
       </div>
       <Field id={id("phone")} name="phone" label="Phone" placeholder="(555) 555-5555" type="tel" required />
       <Field id={id("email")} name="email" label="Email" placeholder="you@email.com" type="email" required />
-      <Field id={id("address")} name="address" label="Property address" placeholder="123 Ocean Ave, Long Beach" required />
+      <AddressAutocomplete
+        id={id("address")}
+        name="address"
+        label="Property address"
+        placeholder="123 Ocean Ave, Long Beach"
+        required
+        resetSignal={resetSignal}
+      />
 
       <div>
         <label

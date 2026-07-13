@@ -98,6 +98,28 @@ submissions still land in Vercel logs; you just don't get the email push.
 
 ---
 
+## Address autocomplete (Mapbox)
+
+The Property Address field can suggest real addresses as the visitor types
+(faster + more accurate leads). It uses Mapbox and needs **one** public token.
+
+**Enable it (one-time, ~3 min):**
+
+1. Sign up free at [mapbox.com](https://account.mapbox.com/auth/signup/).
+2. Copy your **Default public token** (starts with `pk.`) from the account page,
+   or create a new one under *Access tokens*.
+3. (Recommended) Add a **URL restriction** on that token for
+   `https://truecoastalexterior.com/*` so it can only be used from the site.
+4. In Vercel → project → Settings → Environment Variables, add:
+   - `NEXT_PUBLIC_MAPBOX_TOKEN` = the `pk.…` token
+5. Redeploy (this token is inlined at build time, so a redeploy is required).
+
+That's it. Suggestions are US-only and biased toward LA/Orange County. Mapbox's
+free tier (100k lookups/mo) is far more than a lead form uses. **No token = the
+field quietly works as a normal text box**, so the form never breaks.
+
+---
+
 ## Deploy to Vercel
 
 ### First time
