@@ -108,6 +108,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Forward every lead to the CRM (Flyra) via a configured inbound webhook.
+    // Set FLYRA_WEBHOOK_URL in the environment. Non-blocking — a CRM hiccup
+    // never breaks the form (the email + log still go through).
+    const crmWebhook = process.env.FLYRA_WEBHOOK_URL;
+    if (crmWebhook) {
+      const [firstName, ...rest] = payload.name.trim().split(/\s+/);
+      try {
+        const r = await fetch(crmWebhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            firstName,
+            lastName: rest.join(" "),
+            fullName: payload.name,
+          }),
+        });
+        if (r.ok) console.log("[quote] Flyra webhook ok", r.status);
+        else
+          console.error(
+            "[quote] Flyra webhook error",
+            r.status,
+            await r.text(),
+          );
+      } catch (err) {
+        console.error("[quote] Flyra webhook failed", err);
+      }
+    } else {
+      console.warn("[quote] FLYRA_WEBHOOK_URL not set — lead not sent to CRM");
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[quote] error", err);
