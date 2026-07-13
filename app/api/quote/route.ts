@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
     // This mirrors the fields/payload of the hosted Flyra form (f981awcw) exactly
     // so the two intake paths can't drift. Field keys captured from that form:
     //   - service_type: array of slugs
-    //   - field_7: property address (Flyra's address field id for this form)
+    //   - address (+ address_zip): property address
     //   - details: free-text notes
     const flyraFormUrl =
       process.env.FLYRA_FORM_URL ||
@@ -171,8 +171,8 @@ export async function POST(req: NextRequest) {
             last_name: payload.lastName,
             phone: payload.phone,
             email: payload.email,
-            field_7: payload.address,
-            field_7_zip: zipMatch ? zipMatch[0] : "",
+            address: payload.address,
+            address_zip: zipMatch ? zipMatch[0] : "",
             service_type: serviceSlugs,
             details,
             quote_total_cents: 0,
