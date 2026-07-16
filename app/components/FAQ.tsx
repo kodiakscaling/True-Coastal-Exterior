@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FAQS } from "@/lib/constants";
+import { BUSINESS, FAQS } from "@/lib/constants";
 
 export function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
@@ -16,8 +16,8 @@ export function FAQ() {
           </h2>
           <p className="mt-4 text-navy-900/70">
             Anything not here? Text us at{" "}
-            <a href="tel:+18605081161" className="underline decoration-sunset-coral decoration-2 underline-offset-4 font-semibold">
-              860-508-1161
+            <a href={BUSINESS.phoneHref} className="underline decoration-sunset-coral decoration-2 underline-offset-4 font-semibold">
+              {BUSINESS.phone}
             </a>{" "}
             and we&apos;ll answer.
           </p>

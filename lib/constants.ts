@@ -1,8 +1,8 @@
 export const BUSINESS = {
   name: "True Coastal Exterior",
   tagline: "Exterior Home Services",
-  phone: "860-508-1161",
-  phoneHref: "tel:+18605081161",
+  phone: "(562) 247-4470",
+  phoneHref: "tel:+15622474470",
   email: "contact@truecoastalexterior.com",
   emailHref: "mailto:contact@truecoastalexterior.com",
   domain: "truecoastalexterior.com",
