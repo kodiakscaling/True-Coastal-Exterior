@@ -73,23 +73,28 @@ Drop the photos in `/public/gallery/` and reference them like `/gallery/driveway
 The `/api/quote` endpoint logs every submission to Vercel logs so nothing gets
 dropped. To also get an **email** for each lead, you only need **one** env var.
 
-**Enable email (one-time, ~3 min):**
+**Enable email (one-time):**
 
-1. Sign up free at [resend.com](https://resend.com) **using
-   `truecoastalexterior@gmail.com`** (so it can send to that inbox with no
-   domain setup).
-2. Create an API key (Resend dashboard → API Keys → Create).
-3. In Vercel → your project → Settings → Environment Variables, add:
-   - `RESEND_API_KEY` = the key from step 2
-4. Redeploy. Done — every lead now emails **truecoastalexterior@gmail.com**.
+1. Sign up free at [resend.com](https://resend.com).
+2. **Verify the `truecoastalexterior.com` domain** (Resend dashboard → Domains →
+   Add Domain → add the DNS records it gives you). This is **required** to deliver
+   to `contact@truecoastalexterior.com` — Resend only sends to a domain address
+   once that domain is verified.
+3. Create an API key (Resend dashboard → API Keys → Create).
+4. In Vercel → your project → Settings → Environment Variables, add:
+   - `RESEND_API_KEY` = the key from step 3
+5. Redeploy. Done — every lead now emails **contact@truecoastalexterior.com**.
 
 Sensible defaults are baked in, so nothing else is required:
 
-- `LEAD_TO_EMAIL` — defaults to `truecoastalexterior@gmail.com` (override to change)
-- `LEAD_FROM_EMAIL` — defaults to `onboarding@resend.dev` (Resend's shared sender,
-  no domain needed). Once you verify `truecoastalexterior.com` in Resend, set this
-  to e.g. `leads@truecoastalexterior.com` to send from your own domain and to
-  addresses other than the Gmail.
+- `LEAD_TO_EMAIL` — defaults to `contact@truecoastalexterior.com` (override to change)
+- `LEAD_FROM_EMAIL` — defaults to `leads@truecoastalexterior.com` (sends from the
+  verified domain). Override to change the sender name/address.
+
+> Before the domain is verified you can still test using Resend's shared sender:
+> set `LEAD_FROM_EMAIL=onboarding@resend.dev` and `LEAD_TO_EMAIL` to your own
+> Resend-account email (Resend's no-domain testing mode only delivers to that
+> address).
 
 The email includes name, phone, email, address, selected service(s) (including
 any "Other" text), notes, and where the lead came from, with a `reply-to` set to

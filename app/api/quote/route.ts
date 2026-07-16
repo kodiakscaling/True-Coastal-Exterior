@@ -44,14 +44,17 @@ export async function POST(req: NextRequest) {
     console.log("[quote]", JSON.stringify(payload));
 
     // Email notification via Resend.
-    // Only RESEND_API_KEY is required — the destination defaults to the
-    // business inbox and the sender defaults to Resend's shared address
-    // (works with no domain setup). Override with LEAD_TO_EMAIL /
-    // LEAD_FROM_EMAIL env vars once a domain is verified.
+    // Leads are emailed to contact@truecoastalexterior.com, sent from the
+    // business domain. NOTE: delivering to a domain address (not the Resend
+    // account's own email) requires truecoastalexterior.com to be a VERIFIED
+    // domain in Resend; otherwise Resend rejects the send. Both are overridable
+    // via LEAD_TO_EMAIL / LEAD_FROM_EMAIL.
     const resendKey = process.env.RESEND_API_KEY;
-    const toEmail = process.env.LEAD_TO_EMAIL || "truecoastalexterior@gmail.com";
+    const toEmail =
+      process.env.LEAD_TO_EMAIL || "contact@truecoastalexterior.com";
     const fromEmail =
-      process.env.LEAD_FROM_EMAIL || "True Coastal Leads <onboarding@resend.dev>";
+      process.env.LEAD_FROM_EMAIL ||
+      "True Coastal Leads <leads@truecoastalexterior.com>";
 
     if (resendKey) {
       const rows = [
