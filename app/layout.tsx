@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Alfa_Slab_One, Caveat, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { BUSINESS } from "@/lib/constants";
+import { Analytics } from "@vercel/analytics/next";
 
 const display = Alfa_Slab_One({
   weight: "400",
@@ -67,7 +68,10 @@ export default function RootLayout({
       lang="en"
       className={`${display.variable} ${script.variable} ${body.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
