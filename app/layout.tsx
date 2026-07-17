@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Alfa_Slab_One, Caveat, DM_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { BUSINESS } from "@/lib/constants";
 
@@ -67,7 +68,10 @@ export default function RootLayout({
       lang="en"
       className={`${display.variable} ${script.variable} ${body.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
